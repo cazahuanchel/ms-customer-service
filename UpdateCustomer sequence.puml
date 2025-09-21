@@ -1,0 +1,34 @@
+'Descripción: actualización parcial (PATCH/PUT) con validaciones y upsert controlado.
+@startuml
+title UpdateCustomer sequence
+participant Customer
+participant CustomerController
+participant CustomerService
+participant CustomerRepository as "CustomerRepository\n(MongoDB reactive)"
+
+Customer -> CustomerController : PUT /customers/{id}\n{CustomerUpdateDTO}
+activate CustomerController
+
+CustomerController -> CustomerService : updateCustomer(id, dto) : Mono<Customer>
+activate CustomerService
+
+CustomerService -> CustomerRepository : findByIdReactive(id) : Mono<Customer>
+activate CustomerRepository
+CustomerRepository --> CustomerService : Mono<Customer> or Mono.empty()
+deactivate CustomerRepository
+
+alt exists
+  CustomerService -> CustomerRepository : save(updatedCustomerDoc) : Mono<Customer>
+  activate CustomerRepository
+  CustomerRepository --> CustomerService : Mono<Customer>
+  deactivate CustomerRepository
+
+  CustomerService --> CustomerController : Mono<Customer> (200 OK)
+else not found
+  CustomerService --> CustomerController : Mono<Error> (404 Not Found)
+end
+
+CustomerController --> Customer : 200 OK or 404 Not Found
+deactivate CustomerController
+deactivate CustomerService
+@enduml

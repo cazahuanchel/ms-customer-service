@@ -1,0 +1,34 @@
+'Descripción: eliminación lógica (recomendada) o física según política. Aquí muestro eliminación lógica (soft delete).
+@startuml
+title DeleteCustomer sequence
+participant Customer
+participant CustomerController
+participant CustomerService
+participant CustomerRepository as "CustomerRepository\n(MongoDB reactive)"
+
+Customer -> CustomerController : DELETE /customers/{id}
+activate CustomerController
+
+CustomerController -> CustomerService : deleteCustomer(id) : Mono<Void>
+activate CustomerService
+
+CustomerService -> CustomerRepository : findByIdReactive(id) : Mono<Customer>
+activate CustomerRepository
+CustomerRepository --> CustomerService : Mono<Customer> or Mono.empty()
+deactivate CustomerRepository
+
+alt exists
+  CustomerService -> CustomerRepository : update(set deleted=true, deletedAt) : Mono<Void>
+  activate CustomerRepository
+  CustomerRepository --> CustomerService : Mono<Void>
+  deactivate CustomerRepository
+
+  CustomerService --> CustomerController : Mono<Void> (204 No Content)
+else not found
+  CustomerService --> CustomerController : Mono<Error> (404 Not Found)
+end
+
+CustomerController --> Customer : 204 No Content or 404 Not Found
+deactivate CustomerController
+deactivate CustomerService
+@enduml
