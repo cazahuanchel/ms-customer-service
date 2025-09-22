@@ -1,0 +1,38 @@
+'Descripción: un operador bancario añade un firmante autorizado para una cuenta cliente. Se incluyen permisos y registro del cambio.
+@startuml
+title AddAuthorizedSigner sequence
+participant BankOperator as "BankOperator (actor)"
+participant CustomerController
+participant CustomerService
+participant CustomerRepository as "CustomerRepository\n(MongoDB reactive)"
+
+BankOperator -> CustomerController : POST /customer/authorizedSigners\n{requestBody}
+activate CustomerController
+
+CustomerController -> CustomerService : addAuthorizedSigner(Customer customer, operatorId) : Single<Customer>
+activate CustomerService
+
+' Validate operator privileges (simplified)
+CustomerService -> CustomerRepository : checkOperatorPrivileges(operatorId) : Single<Boolean>
+CustomerRepository -> CustomerService : true or false Single<Boolean>
+
+CustomerService -> CustomerRepository : findById(id) : Single<Customer>
+activate CustomerRepository
+CustomerRepository --> CustomerService : Single<Customer> or Single<Empty>
+deactivate CustomerRepository
+
+alt validation and exist ok
+  CustomerService -> CustomerRepository : update(Customer customer) : Single<Customer>
+  activate CustomerRepository
+  CustomerRepository --> CustomerService : Single<Customer> (updated)
+  deactivate CustomerRepository
+  CustomerService --> CustomerController : Single<Customer> (200 OK)
+else validation fail or not exist
+  CustomerService --> CustomerController : Single<Error> (403 Forbidden or 404 Not Found)
+end
+
+CustomerController --> BankOperator : 200 OK or 403 Forbidden or 404 Not Found
+deactivate CustomerController
+deactivate CustomerService
+
+@enduml

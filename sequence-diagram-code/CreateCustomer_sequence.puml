@@ -1,0 +1,35 @@
+@startuml
+title CreateCustomer sequence
+participant Customer
+participant CustomerController
+participant CustomerService
+participant CustomerRepository as "CustomerRepository\n(MongoDB reactive)"
+
+Customer -> CustomerController : POST /customer\n{requestBody}
+activate CustomerController
+
+CustomerController -> CustomerService : createCustomer(Customer customer) : Completable
+activate CustomerService
+
+' Business validations
+CustomerService -> CustomerRepository : findByUniqueId(customer.idType, customer.id) : Single<Customer>
+activate CustomerRepository
+CustomerRepository --> CustomerService : Single.empty() or Single<Customer>
+deactivate CustomerRepository
+
+alt not exists
+
+  CustomerService -> CustomerRepository : insert(Customer customer) : Completable
+  activate CustomerRepository
+  CustomerRepository --> CustomerService : Completable (inserted)
+  deactivate CustomerRepository
+
+  CustomerService --> CustomerController : Completable (201 Created)
+else exists
+  CustomerService --> CustomerController : Completable (409 Conflict)
+end
+
+CustomerController --> Customer : 201 Created or 409 Conflict
+deactivate CustomerController
+deactivate CustomerService
+@enduml

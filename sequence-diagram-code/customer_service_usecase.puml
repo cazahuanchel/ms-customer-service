@@ -9,6 +9,7 @@ usecase "DeleteCustomer" as UC_DeleteCustomer
 usecase "AddAuthorizedSigner" as UC_AddSigner
 
 Customer -> UC_GetCustomer
+BankOperator -> UC_GetCustomer
 BankOperator -> UC_CreateCustomer
 BankOperator -> UC_UpdateCustomer
 BankOperator -> UC_DeleteCustomer

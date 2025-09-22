@@ -1,0 +1,30 @@
+@startuml
+autonumber
+title GetAllCustomers sequence
+participant Customer
+participant CustomerController
+participant CustomerService
+participant CustomerRepository as "CustomerRepository\n(MongoDB reactive)"
+
+Customer -> CustomerController : GET /customers
+activate CustomerController
+
+CustomerController -> CustomerService : findAll() : Flowable<Customer>
+activate CustomerService
+
+CustomerService -> CustomerRepository : findAll() : Flowable<Customer>
+activate CustomerRepository
+
+CustomerRepository --> CustomerService : Flowable<Customer> or Flowable<Empty>
+deactivate CustomerRepository
+
+alt not exist
+    CustomerService --> CustomerController : Flowable<Empty> (404 Not Found)
+else exist
+    CustomerService --> CustomerController : Flowable<Customer> (200 OK)
+    deactivate CustomerService
+end
+
+CustomerController --> Customer : 200 OK or 404 Not Found
+deactivate CustomerController
+@enduml

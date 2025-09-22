@@ -6,26 +6,26 @@ participant CustomerController
 participant CustomerService
 participant CustomerRepository as "CustomerRepository\n(MongoDB reactive)"
 
-Customer -> CustomerController : DELETE /customers/{id}
+Customer -> CustomerController : DELETE /customer
 activate CustomerController
 
-CustomerController -> CustomerService : deleteCustomer(id) : Mono<Void>
+CustomerController -> CustomerService : deleteCustomer(id) : Completable
 activate CustomerService
 
-CustomerService -> CustomerRepository : findByIdReactive(id) : Mono<Customer>
+CustomerService -> CustomerRepository : findById(id) : Mono<Customer>
 activate CustomerRepository
 CustomerRepository --> CustomerService : Mono<Customer> or Mono.empty()
 deactivate CustomerRepository
 
 alt exists
-  CustomerService -> CustomerRepository : update(set deleted=true, deletedAt) : Mono<Void>
+  CustomerService -> CustomerRepository : deleteById(String id) : Completable
   activate CustomerRepository
-  CustomerRepository --> CustomerService : Mono<Void>
+  CustomerRepository --> CustomerService : Completable
   deactivate CustomerRepository
 
-  CustomerService --> CustomerController : Mono<Void> (204 No Content)
+  CustomerService --> CustomerController : Completable (204 No Content)
 else not found
-  CustomerService --> CustomerController : Mono<Error> (404 Not Found)
+  CustomerService --> CustomerController : Completable (404 Not Found)
 end
 
 CustomerController --> Customer : 204 No Content or 404 Not Found

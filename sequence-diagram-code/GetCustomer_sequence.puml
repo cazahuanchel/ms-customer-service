@@ -1,0 +1,29 @@
+@startuml
+autonumber
+title GetCustomer sequence
+participant Customer
+participant CustomerController
+participant CustomerService
+participant CustomerRepository as "CustomerRepository\n(MongoDB reactive)"
+
+Customer -> CustomerController : GET /customer/{id}\n RequestParam("id")
+activate CustomerController
+
+CustomerController -> CustomerService : findById(String id) : Single<Customer>
+activate CustomerService
+
+CustomerService -> CustomerRepository : findById(String id) : Single<Customer>
+activate CustomerRepository
+
+CustomerRepository --> CustomerService : Single<Customer> or Single<Empty>
+deactivate CustomerRepository
+
+alt not exists
+    CustomerService --> CustomerController : Single<Empty> (404 Not Found)
+else exists
+    CustomerService --> CustomerController : Single<Customer> (200 OK)
+    deactivate CustomerService
+end
+CustomerController --> Customer : 200 OK or 404 Not Found
+deactivate CustomerController
+@enduml

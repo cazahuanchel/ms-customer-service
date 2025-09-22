@@ -6,26 +6,26 @@ participant CustomerController
 participant CustomerService
 participant CustomerRepository as "CustomerRepository\n(MongoDB reactive)"
 
-Customer -> CustomerController : PUT /customers/{id}\n{CustomerUpdateDTO}
+Customer -> CustomerController : PUT /customer\n{RequestBody}
 activate CustomerController
 
-CustomerController -> CustomerService : updateCustomer(id, dto) : Mono<Customer>
+CustomerController -> CustomerService : updateCustomer(Customer customer) : Completable
 activate CustomerService
 
-CustomerService -> CustomerRepository : findByIdReactive(id) : Mono<Customer>
+CustomerService -> CustomerRepository : findByIdReactive(id) : Single<Customer>
 activate CustomerRepository
-CustomerRepository --> CustomerService : Mono<Customer> or Mono.empty()
+CustomerRepository --> CustomerService : Single<Customer> or Single.empty()
 deactivate CustomerRepository
 
 alt exists
-  CustomerService -> CustomerRepository : save(updatedCustomerDoc) : Mono<Customer>
+  CustomerService -> CustomerRepository : save(Customer customer) : Completable
   activate CustomerRepository
-  CustomerRepository --> CustomerService : Mono<Customer>
+  CustomerRepository --> CustomerService : Completable
   deactivate CustomerRepository
 
-  CustomerService --> CustomerController : Mono<Customer> (200 OK)
+  CustomerService --> CustomerController : Completable (200 OK)
 else not found
-  CustomerService --> CustomerController : Mono<Error> (404 Not Found)
+  CustomerService --> CustomerController : Completable (404 Not Found)
 end
 
 CustomerController --> Customer : 200 OK or 404 Not Found
