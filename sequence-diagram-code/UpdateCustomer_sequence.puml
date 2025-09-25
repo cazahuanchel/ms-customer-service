@@ -1,4 +1,4 @@
-'Descripción: actualización parcial (PATCH/PUT) con validaciones y upsert controlado.
+'Descripción: actualización de clientes (PUT)
 @startuml
 title UpdateCustomer sequence
 participant Customer

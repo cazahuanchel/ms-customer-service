@@ -1,0 +1,368 @@
+openapi: 3.0.3
+info:
+  title: Customer Service API
+  version: 1.0.0
+  description: API reactiva para gestión de clientes (personal y enterprise), titulares y firmantes autorizados.
+servers:
+  - url: http://localhost:8080
+    description: Servidor local
+paths:
+  /customers:
+    get:
+      summary: List all customers
+      operationId: getAllCustomers
+      description: Devuelve todos los clientes persoanles y empresariales (reactive stream).
+      x-spring-webflux: true
+      responses:
+        '200':
+          description: OK - list of customers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Customer'
+        '204':
+          description: No Content - no existen clientes
+  /customer:
+    parameters:
+      - name: id
+        in: query
+        required: true
+        schema:
+          type: string
+        description: Identificador único del cliente
+    get:
+      summary: Get customer by id
+      description: Devuelve el cliente personal o empresarial consultado por id.
+      operationId: getCustomer
+      x-spring-webflux: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+              examples:
+                personalCustomer:
+                  summary: Personal customer example
+                  value:
+                    id: "64a7f0c4e3f1c9b6d7a1e2f3"
+                    idType: "DNI"
+                    idNumber: "12345678"
+                    customerType: "PERSONAL"
+                    email: "juanperez@gmail.com"
+                    phone: "+51947562847"
+                    personDetail:
+                      firstName: "Juan"
+                      lastName: "Perez"
+                      birthDate: "1985-02-20"
+                      nationality: "Peruano"
+                enterpriseCustomer:
+                  summary: Enterprise customer example
+                  value:
+                    id: "64a7f1aaa3e5b9a1c2d3f4e5"
+                    idType: "DNI"
+                    idNumber: "12345678"
+                    customerType: "ENTERPRISE"
+                    email: "ecabrera@gmail.com"
+                    phone: "+51947562847"
+                    companyDetail:
+                      ruc: "2027495727"
+                      companyName: "Acme S.A."
+                      registrationNumber: "800123456"
+                      incorporationDate: "2025-01-12"
+                      authorizedSigner: false
+        '404':
+          description: Not Found
+    delete:
+      summary: Delete customer by id
+      operationId: deleteCustomer
+      description: Elimina un cliente empresarial o personal si existe y no tiene restricciones.
+      x-spring-webflux: true
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          description: Not Found
+
+  /customer/personal:
+    post:
+      summary: Create personal customer
+      operationId: createPersonalCustomer
+      description: Crea un nuevo cliente de tipo personal. Valida unicidad.
+      x-spring-webflux: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonalCustomerInput'
+      responses:
+        '201':
+          description: Created - cliente creado
+        '409':
+          description: Conflict - cliente ya existe
+    put:
+      summary: Update existing customer
+      operationId: updatePersonalCustomer
+      description: Actualiza un cliente de tipo personal. Valida existencia.
+      x-spring-webflux: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonalCustomerInput'
+      responses:
+        '200':
+          description: OK - actualizado
+        '404':
+          description: Not Found
+  /customer/enterprise:
+    post:
+      summary: Create personal customer
+      operationId: createEnterpriseCustomer
+      description: Crea un nuevo cliente de tipo empresarial. Valida unicidad.
+      x-spring-webflux: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnterpriseCustomerInput'
+      responses:
+        '201':
+          description: Created - cliente creado
+        '409':
+          description: Conflict - cliente ya existe
+    put:
+      summary: Update existing customer
+      operationId: updateEnterpriseCustomer
+      description: Actualiza un cliente de tipo empresarial. Valida existencia.
+      x-spring-webflux: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnterpriseCustomerInput'
+      responses:
+        '200':
+          description: OK - actualizado
+        '404':
+          description: Not Found
+
+components:
+  schemas:
+    # Base schema used for polymorphism
+    CustomerBase:
+      type: object
+      required:
+        - idType
+        - idNumber
+        - customerType
+      properties:
+        id:
+          type: string
+          description: Internal id (ObjectId/UUID)
+          readOnly: true
+        idType:
+          type: string
+          description: Tipo de identificación (e.g., DNI, RUC)
+        idNumber:
+          type: string
+          description: Número de identificación
+        customerType:
+          type: string
+          enum:
+            - PERSONAL
+            - ENTERPRISE
+          description: Tipo de cliente (PERSONAL o ENTERPRISE)
+        email:
+          type: string
+        phone:
+          type: string
+      example:
+        id: "64a7f0c4e3f1c9b6d7a1e2f3"
+        idType: "DNI"
+        idNumber: "12345678"
+        customerType: "PERSONAL"
+        email: "cliente@example.com"
+        phone: "+51967456932"
+    Customer:
+      oneOf:
+        - $ref: '#/components/schemas/PersonalCustomer'
+        - $ref: '#/components/schemas/EnterpriseCustomer'
+      discriminator:
+        propertyName: customerType
+        mapping:
+          PERSONAL: '#/components/schemas/PersonalCustomer'
+          ENTERPRISE: '#/components/schemas/EnterpriseCustomer'
+
+    # Cliente Personal
+    PersonalCustomer:
+      allOf:
+        - $ref: '#/components/schemas/CustomerBase'
+        - type: object
+          required:
+            - personDetail
+          properties:
+            personDetail:
+              $ref: '#/components/schemas/PersonDetail'
+      example:
+        id: "64a7f0c4e3f1c9b6d7a1e2f3"
+        idType: "DNI"
+        idNumber: "12345678"
+        customerType: "PERSONAL"
+        email: "juanperez@gmail.com"
+        phone: "+51947562847"
+        personDetail:
+          firstName: "Juan"
+          lastName: "Perez"
+          birthDate: "1985-02-20"
+          nationality: "Peruano"
+    PersonDetail:
+      type: object
+      required:
+        - firstName
+        - lastName
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        birthDate:
+          type: string
+          format: date
+        nationality:
+          type: string
+      example:
+        firstName: "Juan"
+        lastName: "Perez"
+        birthDate: "1985-02-20"
+
+    #Cliente Empresarial
+    EnterpriseCustomer:
+      allOf:
+        - $ref: '#/components/schemas/CustomerBase'
+        - type: object
+          required:
+            - companyDetail
+          properties:
+            companyDetail:
+              $ref: '#/components/schemas/CompanyDetail'
+      example:
+        id: "64a7f1aaa3e5b9a1c2d3f4e5"
+        idType: "DNI"
+        idNumber: "12345678"
+        customerType: "ENTERPRISE"
+        email: "ecabrera@gmail.com"
+        phone: "+51947562847"
+        companyDetail:
+          ruc: "2027495727"
+          companyName: "Acme S.A."
+          registrationNumber: "800123456"
+          incorporationDate: "2025-01-12"
+          authorizedSigner: false
+    CompanyDetail:
+      type: object
+      required:
+        - ruc
+        - companyName
+        - registrationNumber
+      properties:
+        ruc:
+          type: string
+        companyName:
+          type: string
+        registrationNumber:
+          type: string
+        incorporationDate:
+          type: string
+          format: date
+        authorizedSigner:
+          type: boolean
+      example:
+        companyName: "Acme S.A."
+        registrationNumber: "800123456"
+
+    # Inputs (can omit server-generated id)
+    #CustomerInput:
+    #  oneOf:
+    #    - $ref: '#/components/schemas/PersonalCustomerInput'
+    #    - $ref: '#/components/schemas/EnterpriseCustomerInput'
+
+    PersonalCustomerInput:
+      allOf:
+        - type: object
+          required:
+            - idType
+            - idNumber
+            - customerType
+            - personDetail
+          properties:
+            idType:
+              type: string
+            idNumber:
+              type: string
+            customerType:
+              type: string
+              enum: [PERSONAL]
+            email:
+              type: string
+            phone:
+              type: string
+        - type: object
+          properties:
+            personDetail:
+              $ref: '#/components/schemas/PersonDetail'
+      example:
+        idType: "DNI"
+        idNumber: "12345678"
+        customerType: "PERSONAL"
+        email: "juanperez@gmail.com"
+        phone: "+51947562847"
+        personDetail:
+          firstName: "Juan"
+          lastName: "Perez"
+          birthDate: "1985-02-20"
+          nationality: "Peruano"
+
+    EnterpriseCustomerInput:
+      allOf:
+        - type: object
+          required:
+            - idType
+            - idNumber
+            - customerType
+            - companyDetail
+          properties:
+            idType:
+              type: string
+            idNumber:
+              type: string
+            customerType:
+              type: string
+              enum: [ENTERPRISE]
+            email:
+              type: string
+            phone:
+              type: string
+        - type: object
+          properties:
+            companyDetail:
+              $ref: '#/components/schemas/CompanyDetail'
+      example:
+        idType: "DNI"
+        idNumber: "12345678"
+        customerType: "ENTERPRISE"
+        email: "ecabrera@gmail.com"
+        phone: "+51947562847"
+        companyDetail:
+          ruc: "2027495727"
+          companyName: "Acme S.A."
+          registrationNumber: "800123456"
+          incorporationDate: "2025-01-12"
+          authorizedSigner: false
