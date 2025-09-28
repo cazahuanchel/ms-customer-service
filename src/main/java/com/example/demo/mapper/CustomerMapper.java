@@ -102,7 +102,6 @@ public class CustomerMapper {
             e.getPersonDetail().setBirthDate(in.getPersonDetail().getBirthDate());
             e.getPersonDetail().setNationality(in.getPersonDetail().getNationality());
         }
-        // limpiar companyDetail si existiera
         e.setCompanyDetail(null);
     }
 
@@ -112,6 +111,13 @@ public class CustomerMapper {
         e.setCustomerType(in.getCustomerType());
         e.setEmail(in.getEmail());
         e.setPhone(in.getPhone());
+        if (in.getPersonDetailDTO() != null) {
+            if (e.getPersonDetail() == null) e.setPersonDetail(new PersonDetailEntity());
+            e.getPersonDetail().setFirstName(in.getPersonDetailDTO().getFirstName());
+            e.getPersonDetail().setLastName(in.getPersonDetailDTO().getLastName());
+            e.getPersonDetail().setBirthDate(in.getPersonDetailDTO().getBirthDate());
+            e.getPersonDetail().setNationality(in.getPersonDetailDTO().getNationality());
+        }
         if (in.getCompanyDetail() != null) {
             if (e.getCompanyDetail() == null) e.setCompanyDetail(new CompanyDetailEntity());
             e.getCompanyDetail().setRuc(in.getCompanyDetail().getRuc());
@@ -120,8 +126,6 @@ public class CustomerMapper {
             e.getCompanyDetail().setIncorporationDate(in.getCompanyDetail().getIncorporationDate());
             e.getCompanyDetail().setAuthorizedSigner(in.getCompanyDetail().getAuthorizedSigner());
         }
-        // limpiar personDetail si existiera
-        e.setPersonDetail(null);
     }
 
     public static Customer toOpenApiCustomer(CustomerDTO dto) {
@@ -157,6 +161,7 @@ public class CustomerMapper {
     public static PersonalCustomerInputDTO toPersonalInputDtoFromOpenApiPersonalCustomerInput(PersonalCustomerInput in) {
         if (in == null) return null;
         PersonalCustomerInputDTO dto = new PersonalCustomerInputDTO();
+        dto.setId(in.getId());
         dto.setIdType(in.getIdType());
         dto.setIdNumber(in.getIdNumber());
         dto.setCustomerType(in.getCustomerType().getValue());
@@ -177,6 +182,7 @@ public class CustomerMapper {
     public static EnterpriseCustomerInputDTO toEnterpriseInputDtoFromOpenApiEnterpriseInputDto(EnterpriseCustomerInput in) {
         if (in == null) return null;
         EnterpriseCustomerInputDTO dto = new EnterpriseCustomerInputDTO();
+        dto.setId(in.getId());
         dto.setIdType(in.getIdType());
         dto.setIdNumber(in.getIdNumber());
         dto.setCustomerType(in.getCustomerType().getValue());

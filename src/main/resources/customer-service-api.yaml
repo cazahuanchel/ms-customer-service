@@ -242,6 +242,7 @@ components:
         firstName: "Juan"
         lastName: "Perez"
         birthDate: "1985-02-20"
+        nationality: "Peruano"
 
     #Cliente Empresarial
     EnterpriseCustomer:
@@ -310,6 +311,8 @@ components:
             - customerType
             - personDetail
           properties:
+            id:
+              type: string
             idType:
               type: string
             idNumber:
@@ -344,8 +347,11 @@ components:
             - idType
             - idNumber
             - customerType
+            - personDetail
             - companyDetail
           properties:
+            id:
+              type: string
             idType:
               type: string
             idNumber:
