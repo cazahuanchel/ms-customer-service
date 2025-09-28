@@ -251,6 +251,8 @@ components:
           required:
             - companyDetail
           properties:
+            personDetail:
+              $ref: '#/components/schemas/PersonDetail'
             companyDetail:
               $ref: '#/components/schemas/CompanyDetail'
       example:
@@ -260,6 +262,11 @@ components:
         customerType: "ENTERPRISE"
         email: "ecabrera@gmail.com"
         phone: "+51947562847"
+        personDetail:
+          firstName: "Eber"
+          lastName: "Cabrera"
+          birthDate: "1980-11-05"
+          nationality: "Peruano"
         companyDetail:
           ruc: "2027495727"
           companyName: "Acme S.A."
@@ -352,6 +359,8 @@ components:
               type: string
         - type: object
           properties:
+            personDetail:
+              $ref: '#/components/schemas/PersonDetail'
             companyDetail:
               $ref: '#/components/schemas/CompanyDetail'
       example:
@@ -360,6 +369,11 @@ components:
         customerType: "ENTERPRISE"
         email: "ecabrera@gmail.com"
         phone: "+51947562847"
+        personDetail:
+          firstName: "Eber"
+          lastName: "Cabrera"
+          birthDate: "1980-11-05"
+          nationality: "Peruano"
         companyDetail:
           ruc: "2027495727"
           companyName: "Acme S.A."

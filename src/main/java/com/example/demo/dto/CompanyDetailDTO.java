@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -13,7 +13,7 @@ public class CompanyDetailDTO {
     private String ruc;
     private String companyName;
     private String registrationNumber;
-    private Date incorporationDate;
+    private LocalDate incorporationDate;
     private Boolean authorizedSigner;
 
 }

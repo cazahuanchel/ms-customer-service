@@ -1,13 +1,12 @@
 package com.example.demo.service.impl;
 
-
 import com.example.demo.dto.*;
 import com.example.demo.exception.ConflictException;
 import com.example.demo.exception.NotFoundException;
 import com.example.demo.mapper.CustomerMapper;
 import com.example.demo.model.CustomerEntity;
 import com.example.demo.repository.CustomerRepository;
-import com.example.demo.service.ICustomer;
+import com.example.demo.service.ICustomerService;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Single;
@@ -21,7 +20,7 @@ import reactor.core.publisher.Mono;
 @AllArgsConstructor
 @Builder
 @Slf4j
-public class CustomerImpl implements ICustomer {
+public class CustomerServiceImpl implements ICustomerService {
 
     private final CustomerRepository customerRepository;
 

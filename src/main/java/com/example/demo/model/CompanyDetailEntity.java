@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Getter
@@ -13,6 +14,6 @@ public class CompanyDetailEntity {
     private String ruc;
     private String companyName;
     private String registrationNumber;
-    private Date incorporationDate;
+    private LocalDate incorporationDate;
     private Boolean authorizedSigner;
 }

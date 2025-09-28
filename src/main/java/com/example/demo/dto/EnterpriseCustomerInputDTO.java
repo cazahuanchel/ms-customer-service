@@ -8,10 +8,12 @@ import lombok.Setter;
 @Setter
 @RequiredArgsConstructor
 public class EnterpriseCustomerInputDTO {
+    private String id;
     private String idType;
     private String idNumber;
     private String customerType; // ENTERPRISE
     private String email;
     private String phone;
+    private PersonDetailDTO personDetailDTO;
     private CompanyDetailDTO companyDetail;
 }

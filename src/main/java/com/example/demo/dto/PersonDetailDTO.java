@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -12,6 +12,6 @@ import java.util.Date;
 public class PersonDetailDTO {
     private String firstName;
     private String lastName;
-    private Date birthDate;
+    private LocalDate birthDate;
     private String nationality;
 }

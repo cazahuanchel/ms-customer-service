@@ -3,8 +3,6 @@ package com.example.demo.mapper;
 import com.example.demo.dto.*;
 import com.example.demo.model.*;
 
-import java.util.Date;
-
 public class CustomerMapper {
 
     public static CustomerDTO toDto(CustomerEntity e) {
@@ -13,7 +11,7 @@ public class CustomerMapper {
         dto.setId(e.getId());
         dto.setIdType(e.getIdType());
         dto.setIdNumber(e.getIdNumber());
-        dto.setCustomerType(e.getCustomerType());
+        dto.setCustomerType(CustomerTypeEnum.valueOf(e.getCustomerType()));
         dto.setEmail(e.getEmail());
         dto.setPhone(e.getPhone());
         if (e.getPersonDetail() != null) {
@@ -71,6 +69,14 @@ public class CustomerMapper {
         e.setCustomerType(in.getCustomerType());
         e.setEmail(in.getEmail());
         e.setPhone(in.getPhone());
+        if (in.getPersonDetailDTO() != null) {
+            PersonDetailEntity pd = new PersonDetailEntity();
+            pd.setFirstName(in.getPersonDetailDTO().getFirstName());
+            pd.setLastName(in.getPersonDetailDTO().getLastName());
+            pd.setBirthDate(in.getPersonDetailDTO().getBirthDate());
+            pd.setNationality(in.getPersonDetailDTO().getNationality());
+            e.setPersonDetail(pd);
+        }
         if (in.getCompanyDetail() != null) {
             CompanyDetailEntity cd = new CompanyDetailEntity();
             cd.setRuc(in.getCompanyDetail().getRuc());
@@ -116,5 +122,85 @@ public class CustomerMapper {
         }
         // limpiar personDetail si existiera
         e.setPersonDetail(null);
+    }
+
+    public static Customer toOpenApiCustomer(CustomerDTO dto) {
+        Customer c = new Customer();
+        c.setId(dto.getId());
+        c.setIdType(dto.getIdType());
+        c.setIdNumber(dto.getIdNumber());
+        Customer.CustomerTypeEnum ct = Customer.CustomerTypeEnum.fromValue(dto.getCustomerType().getValue());
+        c.setCustomerType(ct);
+        c.setEmail(dto.getEmail());
+        c.setPhone(dto.getPhone());
+        if (dto.getPersonDetail() != null) {
+            PersonDetail pd = new PersonDetail();
+            pd.setFirstName(dto.getPersonDetail().getFirstName());
+            pd.setLastName(dto.getPersonDetail().getLastName());
+            pd.setBirthDate(dto.getPersonDetail().getBirthDate());
+            pd.setNationality(dto.getPersonDetail().getNationality());
+            c.setPersonDetail(pd);
+        }
+        if (dto.getCompanyDetail() != null) {
+            CompanyDetail cd = new CompanyDetail();
+            cd.setRuc(dto.getCompanyDetail().getRuc());
+            cd.setCompanyName(dto.getCompanyDetail().getCompanyName());
+            cd.setRegistrationNumber(dto.getCompanyDetail().getRegistrationNumber());
+            cd.setIncorporationDate(dto.getCompanyDetail().getIncorporationDate());
+            cd.setAuthorizedSigner(dto.getCompanyDetail().getAuthorizedSigner());
+            c.setCompanyDetail(cd);
+        }
+        return c;
+    }
+
+    // mapear OpenAPI -> DTO para cliente personal
+    public static PersonalCustomerInputDTO toPersonalInputDtoFromOpenApiPersonalCustomerInput(PersonalCustomerInput in) {
+        if (in == null) return null;
+        PersonalCustomerInputDTO dto = new PersonalCustomerInputDTO();
+        dto.setIdType(in.getIdType());
+        dto.setIdNumber(in.getIdNumber());
+        dto.setCustomerType(in.getCustomerType().getValue());
+        dto.setEmail(in.getEmail());
+        dto.setPhone(in.getPhone());
+        if (in.getPersonDetail() != null) {
+            PersonDetailDTO pd = new PersonDetailDTO();
+            PersonDetail inPd = in.getPersonDetail();
+            pd.setFirstName(inPd.getFirstName());
+            pd.setLastName(inPd.getLastName());
+            pd.setBirthDate(inPd.getBirthDate());
+            pd.setNationality(inPd.getNationality());
+            dto.setPersonDetail(pd);
+        }
+        return dto;
+    }
+    // mapear OpenAPI -> DTO para cliente empresa
+    public static EnterpriseCustomerInputDTO toEnterpriseInputDtoFromOpenApiEnterpriseInputDto(EnterpriseCustomerInput in) {
+        if (in == null) return null;
+        EnterpriseCustomerInputDTO dto = new EnterpriseCustomerInputDTO();
+        dto.setIdType(in.getIdType());
+        dto.setIdNumber(in.getIdNumber());
+        dto.setCustomerType(in.getCustomerType().getValue());
+        dto.setEmail(in.getEmail());
+        dto.setPhone(in.getPhone());
+        if (in.getPersonDetail() != null) {
+            PersonDetailDTO pd = new PersonDetailDTO();
+            PersonDetail inPd = in.getPersonDetail();
+            pd.setFirstName(inPd.getFirstName());
+            pd.setLastName(inPd.getLastName());
+            pd.setBirthDate(inPd.getBirthDate());
+            pd.setNationality(inPd.getNationality());
+            dto.setPersonDetailDTO(pd);
+        }
+        if (in.getCompanyDetail() != null) {
+            CompanyDetailDTO cd = new CompanyDetailDTO();
+            CompanyDetail inCd = in.getCompanyDetail();
+            cd.setRuc(inCd.getRuc());
+            cd.setCompanyName(inCd.getCompanyName());
+            cd.setRegistrationNumber(inCd.getRegistrationNumber());
+            cd.setIncorporationDate(inCd.getIncorporationDate());
+            cd.setAuthorizedSigner(inCd.getAuthorizedSigner());
+            dto.setCompanyDetail(cd);
+        }
+        return dto;
     }
 }
