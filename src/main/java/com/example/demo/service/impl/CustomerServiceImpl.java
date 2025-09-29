@@ -48,7 +48,7 @@ public class CustomerServiceImpl implements ICustomerService {
                     if (Boolean.TRUE.equals(exists)) {
                         return Mono.error(new ConflictException("Cliente ya existe con idType/idNumber"));
                     } else {
-                        CustomerEntity entity = CustomerMapper.toEntityFromPersonalInput(dto);
+                        CustomerEntity entity = CustomerMapper.toEntityFromPersonalCustomerInputDTO(dto);
                         return customerRepository.save(entity).then();
                     }
                 });

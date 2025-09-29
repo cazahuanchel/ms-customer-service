@@ -44,7 +44,7 @@ public class CustomerMapper {
         return dto;
     }
 
-    public static CustomerEntity toEntityFromPersonalInput(PersonalCustomerInputDTO in) {
+    public static CustomerEntity toEntityFromPersonalCustomerInputDTO(PersonalCustomerInputDTO in) {
         CustomerEntity e = new CustomerEntity();
         e.setIdType(in.getIdType());
         e.setIdNumber(in.getIdNumber());
