@@ -121,7 +121,7 @@ class CustomersApiDelegateImplTest {
         ResponseEntity<Flux<Customer>> response = delegate.getAllCustomers(null).block();
 
         // Assert
-        assertNotNull(response, "La ResponseEntity no debe ser nula");
+        assertNotNull(response, "El ResponseEntity no debe ser nula");
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode(), "Debe devolver 500 Internal Server Error");
         assertNull(response.getBody(), "El body debe ser nulo en caso de error");
 

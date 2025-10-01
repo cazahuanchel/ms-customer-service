@@ -277,33 +277,43 @@ class CustomerApiDelegateImplTest {
     }
 
     @Test
-    void updatePersonalCustomer_noId_returnsBadRequest() {
+    void createEnterpriseCustomer_unexpectedError_returns500() {
         // Arrange
-        PersonalCustomerInput input = new PersonalCustomerInput();
-        input.setId(null); // ID NULL
-        input.setIdType("DNI");
-        input.setIdNumber("79345679");
-        PersonalCustomerInput.CustomerTypeEnum typeEnum = PersonalCustomerInput.CustomerTypeEnum.valueOf("PERSONAL");
-        input.setCustomerType(typeEnum);
-        input.setEmail("gersoncampos@example.com");
-        input.setPhone("983475683");
+        EnterpriseCustomerInput input = new EnterpriseCustomerInput();
+        input.setId("69788cac-d3a3-43c1-a36d-0a7ba62aa9de");
+        input.setIdType("RUC");
+        input.setIdNumber("20123456789");
+        EnterpriseCustomerInput.CustomerTypeEnum ct = EnterpriseCustomerInput.CustomerTypeEnum.valueOf("ENTERPRISE");
+        input.setCustomerType(ct);
+        input.setEmail("enterprise@example.com");
+        input.setPhone("988888888");
 
-        PersonDetail inPd = new PersonDetail();
-        inPd.setFirstName("Gerson");
-        inPd.setLastName("Campos");
-        inPd.setBirthDate(LocalDate.of(1999, 9, 9));
-        inPd.setNationality("Peruano");
-        input.setPersonDetail(inPd);
+        PersonDetail pd = new PersonDetail();
+        pd.setFirstName("Maria");
+        pd.setLastName("Gomez");
+        pd.setBirthDate(LocalDate.of(1985, 5, 5));
+        pd.setNationality("Peruano");
+        input.setPersonDetail(pd);
+
+        CompanyDetail cd = new CompanyDetail();
+        cd.setRuc("20123456789");
+        cd.setCompanyName("ACME S.A.");
+        cd.setRegistrationNumber("REG-123");
+        cd.setIncorporationDate(LocalDate.of(2010, 6, 1));
+        cd.setAuthorizedSigner(Boolean.TRUE);
+        input.setCompanyDetail(cd);
+
+        when(customerService.createEnterpriseCustomer(any(EnterpriseCustomerInputDTO.class))).thenReturn(Completable.error(new RuntimeException("error")));
 
         // Act
-        Mono<ResponseEntity<Void>> responseMono = delegate.updatePersonalCustomer(Mono.just(input), null);
+        Mono<ResponseEntity<Void>> responseMono = delegate.createEnterpriseCustomer(Mono.just(input), null);
 
         // Assert
         StepVerifier.create(responseMono)
-                .assertNext(resp -> assertEquals(HttpStatus.BAD_REQUEST, resp.getStatusCode()))
+                .assertNext(resp -> assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, resp.getStatusCode()))
                 .verifyComplete();
 
-        verifyNoInteractions(customerService);
+        verify(customerService, times(1)).createEnterpriseCustomer(any(EnterpriseCustomerInputDTO.class));
     }
 
     @Test
@@ -340,6 +350,66 @@ class CustomerApiDelegateImplTest {
     }
 
     @Test
+    void updatePersonalCustomer_nullId_returnsBadRequest() {
+        // Arrange
+        PersonalCustomerInput input = new PersonalCustomerInput();
+        input.setId(null); // id null
+        input.setIdType("DNI");
+        input.setIdNumber("79345679");
+        PersonalCustomerInput.CustomerTypeEnum typeEnum = PersonalCustomerInput.CustomerTypeEnum.valueOf("PERSONAL");
+        input.setCustomerType(typeEnum);
+        input.setEmail("gersoncampos@example.com");
+        input.setPhone("983475683");
+
+        PersonDetail inPd = new PersonDetail();
+        inPd.setFirstName("Gerson");
+        inPd.setLastName("Campos");
+        inPd.setBirthDate(LocalDate.of(1999, 9, 9));
+        inPd.setNationality("Peruano");
+        input.setPersonDetail(inPd);
+
+        // Act
+        Mono<ResponseEntity<Void>> responseMono = delegate.updatePersonalCustomer(Mono.just(input), null);
+
+        // Assert
+        StepVerifier.create(responseMono)
+                .assertNext(resp -> assertEquals(HttpStatus.BAD_REQUEST, resp.getStatusCode()))
+                .verifyComplete();
+
+        verifyNoInteractions(customerService);
+    }
+
+    @Test
+    void updatePersonalCustomer_emptyId_returnsBadRequest() {
+        // Arrange
+        PersonalCustomerInput input = new PersonalCustomerInput();
+        input.setId("   "); // ID empty
+        input.setIdType("DNI");
+        input.setIdNumber("79345679");
+        PersonalCustomerInput.CustomerTypeEnum typeEnum = PersonalCustomerInput.CustomerTypeEnum.valueOf("PERSONAL");
+        input.setCustomerType(typeEnum);
+        input.setEmail("gersoncampos@example.com");
+        input.setPhone("983475683");
+
+        PersonDetail inPd = new PersonDetail();
+        inPd.setFirstName("Gerson");
+        inPd.setLastName("Campos");
+        inPd.setBirthDate(LocalDate.of(1999, 9, 9));
+        inPd.setNationality("Peruano");
+        input.setPersonDetail(inPd);
+
+        // Act
+        Mono<ResponseEntity<Void>> responseMono = delegate.updatePersonalCustomer(Mono.just(input), null);
+
+        // Assert
+        StepVerifier.create(responseMono)
+                .assertNext(resp -> assertEquals(HttpStatus.BAD_REQUEST, resp.getStatusCode()))
+                .verifyComplete();
+
+        verifyNoInteractions(customerService);
+    }
+
+    @Test
     void updatePersonalCustomer_notFound_returns404() {
         // Arrange
         PersonalCustomerInput input = new PersonalCustomerInput();
@@ -369,6 +439,39 @@ class CustomerApiDelegateImplTest {
                 .verifyComplete();
 
         verify(customerService, times(1)).updatePersonalCustomer(eq("aaa"), any(PersonalCustomerInputDTO.class));
+    }
+
+    @Test
+    void updatePersonalCustomer_unexpectedError_returns500() {
+        // Arrange
+        PersonalCustomerInput input = new PersonalCustomerInput();
+        input.setId("39aafcec-68bc-42c3-b84b-50330a20f189");
+        input.setIdType("DNI");
+        input.setIdNumber("79345679");
+        PersonalCustomerInput.CustomerTypeEnum typeEnum = PersonalCustomerInput.CustomerTypeEnum.valueOf("PERSONAL");
+        input.setCustomerType(typeEnum);
+        input.setEmail("gersoncampos@example.com");
+        input.setPhone("983475683");
+
+        PersonDetail inPd = new PersonDetail();
+        inPd.setFirstName("Gerson");
+        inPd.setLastName("Campos");
+        inPd.setBirthDate(LocalDate.of(1999, 9, 9));
+        inPd.setNationality("Peruano");
+        input.setPersonDetail(inPd);
+
+        when(customerService.updatePersonalCustomer(eq("39aafcec-68bc-42c3-b84b-50330a20f189"), any(PersonalCustomerInputDTO.class)))
+                .thenReturn(Single.error(new RuntimeException("error")));
+
+        // Act
+        Mono<ResponseEntity<Void>> responseMono = delegate.updatePersonalCustomer(Mono.just(input), null);
+
+        // Assert
+        StepVerifier.create(responseMono)
+                .assertNext(resp -> assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, resp.getStatusCode()))
+                .verifyComplete();
+
+        verify(customerService, times(1)).updatePersonalCustomer(eq("39aafcec-68bc-42c3-b84b-50330a20f189"), any(PersonalCustomerInputDTO.class));
     }
 
     @Test
@@ -413,7 +516,7 @@ class CustomerApiDelegateImplTest {
     }
 
     @Test
-    void updateEnterpriseCustomer_badId_returnsBadRequest() {
+    void updateEnterpriseCustomer_emptyId_returnsBadRequest() {
         // Arrange
         EnterpriseCustomerInput input = new EnterpriseCustomerInput();
         input.setId("   "); // vacio
@@ -450,6 +553,87 @@ class CustomerApiDelegateImplTest {
         verifyNoInteractions(customerService);
     }
 
+    @Test
+    void updateEnterpriseCustomer_notFound_returns404() {
+        // Arrange
+        EnterpriseCustomerInput input = new EnterpriseCustomerInput();
+        input.setId("not-found");
+        input.setIdType("RUC");
+        input.setIdNumber("20123456789");
+        EnterpriseCustomerInput.CustomerTypeEnum ct = EnterpriseCustomerInput.CustomerTypeEnum.valueOf("ENTERPRISE");
+        input.setCustomerType(ct);
+        input.setEmail("enterprise@example.com");
+        input.setPhone("988888888");
+
+        PersonDetail pd = new PersonDetail();
+        pd.setFirstName("Maria");
+        pd.setLastName("Gomez");
+        pd.setBirthDate(LocalDate.of(1985, 5, 5));
+        pd.setNationality("Peruano");
+        input.setPersonDetail(pd);
+
+        CompanyDetail cd = new CompanyDetail();
+        cd.setRuc("20123456789");
+        cd.setCompanyName("ACME S.A.");
+        cd.setRegistrationNumber("REG-123");
+        cd.setIncorporationDate(LocalDate.of(2010, 6, 1));
+        cd.setAuthorizedSigner(Boolean.TRUE);
+        input.setCompanyDetail(cd);
+
+        when(customerService.updateEnterpriseCustomer(eq("not-found"), any(EnterpriseCustomerInputDTO.class)))
+                .thenReturn(Single.error(new NotFoundException("not found")));
+
+        // Act
+        Mono<ResponseEntity<Void>> responseMono = delegate.updateEnterpriseCustomer(Mono.just(input), null);
+
+        // Assert
+        StepVerifier.create(responseMono)
+                .assertNext(resp -> assertEquals(HttpStatus.NOT_FOUND, resp.getStatusCode()))
+                .verifyComplete();
+
+        verify(customerService, times(1)).updateEnterpriseCustomer(eq("not-found"), any(EnterpriseCustomerInputDTO.class));
+    }
+
+    @Test
+    void updateEnterpriseCustomer_unexpectedError_returns500() {
+        // Arrange
+        EnterpriseCustomerInput input = new EnterpriseCustomerInput();
+        input.setId("69788cac-d3a3-43c1-a36d-0a7ba62aa9de");
+        input.setIdType("RUC");
+        input.setIdNumber("20123456789");
+        EnterpriseCustomerInput.CustomerTypeEnum ct = EnterpriseCustomerInput.CustomerTypeEnum.valueOf("ENTERPRISE");
+        input.setCustomerType(ct);
+        input.setEmail("enterprise@example.com");
+        input.setPhone("988888888");
+
+        PersonDetail pd = new PersonDetail();
+        pd.setFirstName("Maria");
+        pd.setLastName("Gomez");
+        pd.setBirthDate(LocalDate.of(1985, 5, 5));
+        pd.setNationality("Peruano");
+        input.setPersonDetail(pd);
+
+        CompanyDetail cd = new CompanyDetail();
+        cd.setRuc("20123456789");
+        cd.setCompanyName("ACME S.A.");
+        cd.setRegistrationNumber("REG-123");
+        cd.setIncorporationDate(LocalDate.of(2010, 6, 1));
+        cd.setAuthorizedSigner(Boolean.TRUE);
+        input.setCompanyDetail(cd);
+
+        when(customerService.updateEnterpriseCustomer(eq("69788cac-d3a3-43c1-a36d-0a7ba62aa9de"), any(EnterpriseCustomerInputDTO.class)))
+                .thenReturn(Single.error(new RuntimeException("error")));
+
+        // Act
+        Mono<ResponseEntity<Void>> responseMono = delegate.updateEnterpriseCustomer(Mono.just(input), null);
+
+        // Assert
+        StepVerifier.create(responseMono)
+                .assertNext(resp -> assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, resp.getStatusCode()))
+                .verifyComplete();
+
+        verify(customerService, times(1)).updateEnterpriseCustomer(eq("69788cac-d3a3-43c1-a36d-0a7ba62aa9de"), any(EnterpriseCustomerInputDTO.class));
+    }
 
     @Test
     void deleteCustomer_success_returnsOk() {
@@ -481,6 +665,23 @@ class CustomerApiDelegateImplTest {
         // Assert
         StepVerifier.create(responseMono)
                 .assertNext(resp -> assertEquals(HttpStatus.NOT_FOUND, resp.getStatusCode()))
+                .verifyComplete();
+
+        verify(customerService, times(1)).deleteCustomer(id);
+    }
+
+    @Test
+    void deleteCustomer_unexpectedError_returns500() {
+        // Arrange
+        String id = "any-id";
+        when(customerService.deleteCustomer(id)).thenReturn(Completable.error(new RuntimeException("error")));
+
+        // Act
+        Mono<ResponseEntity<Void>> responseMono = delegate.deleteCustomer(id, null);
+
+        // Assert
+        StepVerifier.create(responseMono)
+                .assertNext(resp -> assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, resp.getStatusCode()))
                 .verifyComplete();
 
         verify(customerService, times(1)).deleteCustomer(id);

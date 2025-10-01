@@ -2,11 +2,13 @@ package com.example.demo.service.impl;
 
 import com.example.demo.dto.*;
 import com.example.demo.exception.ConflictException;
+import com.example.demo.exception.DatabaseException;
 import com.example.demo.exception.NotFoundException;
 import com.example.demo.model.CompanyDetailEntity;
 import com.example.demo.model.CustomerEntity;
 import com.example.demo.model.PersonDetailEntity;
 import com.example.demo.repository.CustomerRepository;
+import com.fasterxml.jackson.databind.introspect.TypeResolutionContext;
 import io.reactivex.rxjava3.observers.TestObserver;
 import io.reactivex.rxjava3.subscribers.TestSubscriber;
 import org.junit.jupiter.api.BeforeEach;
@@ -97,17 +99,49 @@ class CustomerServiceImplTest {
     }
 
     @Test
-    void getCustomerById_shouldReturnCustomer_whenExists() {
+    void getAllCustomers_shouldReturnListEmpty() {
         // Arrange
-        when(customerRepository.findById("dc659b24-492f-420e-a6f7-90edb0a507b8")).thenReturn(Mono.just(personalEntity));
+        when(customerRepository.findAll()).thenReturn(Flux.empty());
 
         // Act
-        TestObserver<CustomerDTO> to = customerService.getCustomerById("dc659b24-492f-420e-a6f7-90edb0a507b8").test();
+        TestSubscriber<CustomerDTO> ts = customerService.getAllCustomers().test();
+
+        // Assert
+        ts.assertNoErrors();
+        ts.assertNoValues();
+        ts.assertComplete();
+        ts.assertValueCount(0);
+    }
+
+    @Test
+    void getAllCustomers_shouldReturnDataBaseException() {
+        // Arrange
+        DatabaseException dbEx = new DatabaseException("Error al leer clientes desde MongoDB", null);
+        when(customerRepository.findAll()).thenReturn(Flux.error(dbEx));
+
+        // Act
+        TestSubscriber<CustomerDTO> ts = customerService.getAllCustomers().test();
+
+        // Assert
+        ts.assertNoValues();
+        ts.assertError(DatabaseException.class);
+        ts.assertNotComplete();
+    }
+
+    @Test
+    void getCustomerById_shouldReturnCustomer_whenExists() {
+        // Arrange
+        String id = "dc659b24-492f-420e-a6f7-90edb0a507b8";
+        String idNumber = "12345678";
+        when(customerRepository.findById(id)).thenReturn(Mono.just(personalEntity));
+
+        // Act
+        TestObserver<CustomerDTO> to = customerService.getCustomerById(id).test();
 
         // Assert
         to.assertNoErrors();
         to.assertComplete();
-        to.assertValue(dto -> "dc659b24-492f-420e-a6f7-90edb0a507b8".equals(dto.getId()) && "12345678".equals(dto.getIdNumber()));
+        to.assertValue(dto -> id.equals(dto.getId()) && idNumber.equals(dto.getIdNumber()));
     }
 
     @Test
@@ -119,6 +153,7 @@ class CustomerServiceImplTest {
         TestObserver<CustomerDTO> to = customerService.getCustomerById("no-id").test();
 
         // Assert
+        to.assertNoValues();
         to.assertError(NotFoundException.class);
     }
 

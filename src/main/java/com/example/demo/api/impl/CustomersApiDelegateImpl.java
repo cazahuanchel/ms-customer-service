@@ -25,7 +25,7 @@ public class CustomersApiDelegateImpl implements CustomersApiDelegate {
         Flux<CustomerDTO> fluxDto = Flux.from(customerService.getAllCustomers());
         Flux<Customer> fluxModelOpenApi = fluxDto.map(CustomerMapper::toOpenApiCustomer); // Mapear DTO -> Modelo OpenAPI
 
-        return fluxModelOpenApi.collectList()
+        return fluxModelOpenApi.collectList() // agrupa todos los elementos en una lista
                 .map(list -> {
                     if (list.isEmpty()) {
                         return ResponseEntity.noContent().<Flux<Customer>>build(); // Para devolver 204 cuando no haya elementos

@@ -2,6 +2,7 @@ package com.example.demo.service.impl;
 
 import com.example.demo.dto.*;
 import com.example.demo.exception.ConflictException;
+import com.example.demo.exception.DatabaseException;
 import com.example.demo.exception.NotFoundException;
 import com.example.demo.mapper.CustomerMapper;
 import com.example.demo.model.CustomerEntity;
@@ -14,6 +15,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -26,10 +28,10 @@ public class CustomerServiceImpl implements ICustomerService {
 
     @Override
     public Flowable<CustomerDTO> getAllCustomers() {
-        return Flowable.fromPublisher(
-                customerRepository.findAll()
-                        .map(CustomerMapper::toDto)
-        );
+        Flux<CustomerDTO> flux = customerRepository.findAll()
+                .map(CustomerMapper::toDto)
+                .onErrorMap(e -> new DatabaseException("Error al leer clientes desde MongoDB", e));
+        return Flowable.fromPublisher(flux);
     }
 
     @Override
@@ -42,7 +44,7 @@ public class CustomerServiceImpl implements ICustomerService {
 
     @Override
     public Completable createPersonalCustomer(PersonalCustomerInputDTO dto) {
-        // Validar unicidad por idType + idNumber
+        // Valida unicidad por idType + idNumber
         Mono<Void> flow = customerRepository.existsByIdTypeAndIdNumber(dto.getIdType(), dto.getIdNumber())
                 .flatMap(exists -> {
                     if (Boolean.TRUE.equals(exists)) {
